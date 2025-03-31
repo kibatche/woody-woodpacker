@@ -1,7 +1,8 @@
 #include "woody.h"
 
-extern void *ptr;
-extern struct stat buf;
+extern void         *ptr;
+extern struct stat  buf;
+extern int          fd;
 
 int fill_64(ELF_datas_64 *elf_datas)
 {
@@ -26,48 +27,38 @@ int fill_64(ELF_datas_64 *elf_datas)
     }
     if (elf_datas->offset_section_table_64 + (elf_datas->hdr_64->e_shnum * elf_datas->hdr_64->e_shentsize) > (unsigned long)buf.st_size)
         return print_err(0, NO_SYMBOL);
-    uint16_t i = 0;
-    while (i < elf_datas->nb_of_entries_section_table_64)
+
+    elf_datas->phdr_64 = (Elf64_Phdr *)(ptr + elf_datas->hdr_64->e_phoff);
+    Elf64_Phdr *prev = NULL;
+    Elf64_Phdr *next = NULL;
+    Elf64_Addr virt_addr = 0;
+    int cy = 0;
+    for (int i=0; i< elf_datas->hdr_64->e_phnum; i++)
     {
-        Elf64_Shdr *text_section = &elf_datas->shdr_64[i];
-        if ((text_section->sh_size + text_section->sh_offset > (unsigned int)buf.st_size))
-            return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
-        if (text_section->sh_type == SHT_PROGBITS)
-        {                                                                                     /*Détermine si la section de type SHT_PROGBITS est bien la section .text*/
-            if (text_section->sh_flags & SHF_ALLOC && text_section->sh_flags & SHF_EXECINSTR) // man elf.h
-            {
-                if (text_section->sh_size == 0)
-                    return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
-                unsigned char *tmp = (unsigned char *)(ptr + text_section->sh_offset);
-                elf_datas->text_section_instructions = malloc(text_section->sh_size);
-                if (!elf_datas->text_section_instructions)
-                    return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
-                unsigned int j = 0;
-                while (j < text_section->sh_size)
-                {
-                    elf_datas->text_section_instructions[j] = tmp[j];
-                    printf("%02x ", elf_datas->text_section_instructions[j]);
-                    if ((j + 1) % 16 == 0)
-                    {
-                        printf("\n");
-                        fflush(NULL);
-                    }
-                    j++;
-                }
-                // void *exec = mmap(0, text_section->sh_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-                // if (exec == MAP_FAILED)
-                // {
-                //     printf("%s\n",strerror(errno));
-                //     return EXIT_FAILURE;
-                // }
-                // ft_memcpy(exec, elf_datas->text_section_instructions , text_section->sh_size);
-                // int (*ret)() = (int (*)())exec;
-                // ret();
-                break;
-            }
+        Elf64_Phdr *curr = &elf_datas->phdr_64[i];
+        if (!cy && curr->p_type == PT_LOAD)
+        {
+            prev = curr;
+            cy = 1;
+            virt_addr = curr->p_vaddr;
+            continue;
         }
-        i++;
+        if (cy && curr->p_type == PT_LOAD)
+        {
+            next = curr;
+            printf("Found 2 LOAD Segments. Size between them is : %lx - (%lx + %lx) = %lx\nVirtual addr of empty space : %lx\n", \
+                    next->p_offset, prev->p_offset, prev->p_memsz, \
+                    next->p_offset - (prev->p_offset + prev->p_memsz), virt_addr + prev->p_memsz + 1);
+            prev = next;
+            continue;
+        }
     }
+    Elf64_Ehdr ehdr;
+    read(fd, &ehdr, sizeof(ehdr));
+    printf("0x%lx\n", ehdr.e_entry);
+    ehdr.e_entry = 0x629;
+    lseek(fd, 0, SEEK_SET);
+    write(fd, &ehdr, sizeof(ehdr));
     return SUCCESS;
 }
 
@@ -88,10 +79,16 @@ int is_valid_elf_file(ELF_datas_64 *elf_datas)
             return ERROR;
         if (elf_datas->header_size != 0x40)
             return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
-        else if (elf_datas->type != ET_EXEC) // nb : on ne gère pas le type core
+        else if (elf_datas->type != ET_EXEC && elf_datas->type != ET_DYN) // nb : on ne gère pas le type core
             return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
         return 64;
     default:
         return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
     }
 }
+
+
+
+
+
+

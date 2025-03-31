@@ -19,12 +19,12 @@ typedef struct ELF_datas_64
     int         proc_bits;/*64 ou 32 bits*/
     uint16_t    type;/*LSB ou MSB*/
     uint16_t    header_size;/* taille du elf header*/
-
+    Elf64_Addr  entry_point;
     Elf64_Shdr  *shdr_64;/*section header pour les elf 64 bits */
+    Elf64_Phdr  *phdr_64; /*program header table*/
     uint64_t    offset_section_table_64;/*offset de la table des sections*/
     uint16_t    nb_of_entries_section_table_64;/*nombre d'entrées dans la table des section*/
     uint32_t    size_of_entry_section_table_64;/*taille de chaque entrée dans la table des sections*/
-    
     unsigned char  *text_section_instructions;/*section .text de l'exécutable*/
 } ELF_datas_64;
 
