@@ -63,6 +63,8 @@
     "libft.h": "c",
     "mman.h": "c",
     "errno.h": "c",
-    "elf.h": "c"
+    "elf.h": "c",
+    "fcntl.h": "c",
+    "woody.h": "c"
   }
 }

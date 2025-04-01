@@ -46,19 +46,35 @@ int fill_64(ELF_datas_64 *elf_datas)
         if (cy && curr->p_type == PT_LOAD)
         {
             next = curr;
-            printf("Found 2 LOAD Segments. Size between them is : %lx - (%lx + %lx) = %lx\nVirtual addr of empty space : %lx\n", \
+            printf("Found 2 LOAD Segments. Size between them is : %lx - (%lx + %lx) = %lx\nVirtual addr of empty space : %lx\n \
+Offset where to write our shellcode : %lx\n", \
                     next->p_offset, prev->p_offset, prev->p_memsz, \
-                    next->p_offset - (prev->p_offset + prev->p_memsz), virt_addr + prev->p_memsz + 1);
+                    next->p_offset - (prev->p_offset + prev->p_memsz), virt_addr + prev->p_memsz, prev->p_offset + prev->p_filesz);
             prev = next;
             continue;
         }
     }
-    Elf64_Ehdr ehdr;
-    read(fd, &ehdr, sizeof(ehdr));
-    printf("0x%lx\n", ehdr.e_entry);
-    ehdr.e_entry = 0x629;
-    lseek(fd, 0, SEEK_SET);
-    write(fd, &ehdr, sizeof(ehdr));
+    printf("Current entrypoint : %lx\n",elf_datas->hdr_64->e_entry) ? printf("OK\n") :printf("NOT OK\n");
+    elf_datas->hdr_64->e_entry = 0x4004f8;
+    Elf64_Ehdr *hdr_64 = (Elf64_Ehdr *)ptr;
+    printf("New entrypoint : 0x%lx\n", hdr_64->e_entry);
+    int filefd = open("woody_test", O_CREAT | O_RDWR, 0755);
+    int shellcodefd = open("assembly.bin", O_RDONLY);
+    int len = lseek(shellcodefd, 0, SEEK_END);
+    printf("Taille du shellcode : %d\n", len);
+    unsigned char *tmp = malloc(len * sizeof(char));
+    lseek(shellcodefd, 0, SEEK_SET);
+    read(shellcodefd, tmp, len);
+    for (int i = 0;i < len; i++)
+    {
+        printf("\\x%02x\n", tmp[i]);
+    }
+    for (int j = 0; j < len; j++)
+    {
+        ((unsigned char *)ptr + 0x4f8)[j] = tmp[j];
+    }
+    write(filefd, ptr, buf.st_size);
+    close(filefd);
     return SUCCESS;
 }
 

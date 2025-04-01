@@ -18,7 +18,7 @@ int main(int ac, char **av)
         return print_err(errno, NULL);
     if (fstat(fd, &buf) == -1)
         return print_err(errno, NULL);
-    ptr = mmap(0, buf.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    ptr = mmap(0, buf.st_size, PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE, fd, 0);
     if (ptr == MAP_FAILED)
         return EXIT_FAILURE;
     ret = is_valid_elf_file(&elf_datas_64);
@@ -30,5 +30,4 @@ FREE_AND_CLOSE:
     munmap(ptr, buf.st_size);/* on libere l'espace memoire alloue par le kernel */
     close(fd);
     exit(err_ret);
-    return 0;
 }

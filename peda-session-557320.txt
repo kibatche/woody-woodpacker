@@ -1,3 +1,4 @@
 break parse_ehdr_shdr.c:31
+break parse_ehdr_shdr.c:56
 
 set exec-wrapper logging enabled
