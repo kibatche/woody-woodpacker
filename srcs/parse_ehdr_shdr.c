@@ -50,13 +50,14 @@ int fill_64(ELF_datas_64 *elf_datas)
 Offset where to write our shellcode : %lx\n", \
                     next->p_offset, prev->p_offset, prev->p_memsz, \
                     next->p_offset - (prev->p_offset + prev->p_memsz), virt_addr + prev->p_memsz, prev->p_offset + prev->p_filesz);
-            prev = next;
-            continue;
+            prev->p_flags |= PF_X;
+            curr->p_flags |= PF_X;
+                    break;
         }
     }
     printf("Current entrypoint : %lx\n",elf_datas->hdr_64->e_entry) ? printf("OK\n") :printf("NOT OK\n");
-    elf_datas->hdr_64->e_entry = 0x4004f8;
     Elf64_Ehdr *hdr_64 = (Elf64_Ehdr *)ptr;
+    hdr_64->e_entry = virt_addr + prev->p_memsz;
     printf("New entrypoint : 0x%lx\n", hdr_64->e_entry);
     int filefd = open("woody_test", O_CREAT | O_RDWR, 0755);
     int shellcodefd = open("assembly.bin", O_RDONLY);
@@ -69,10 +70,14 @@ Offset where to write our shellcode : %lx\n", \
     {
         printf("\\x%02x\n", tmp[i]);
     }
-    for (int j = 0; j < len; j++)
-    {
-        ((unsigned char *)ptr + 0x4f8)[j] = tmp[j];
+    Elf64_Off off = prev->p_offset + prev->p_filesz;
+    printf("%lx\n", off);
+    for (int j = 0; j < len; j++) {
+        printf("Writing shellcode[%d]: \\x%02x at offset %lx\n", j, tmp[j], prev->p_offset + prev->p_filesz + j);
+        ((unsigned char *)ptr + off)[j] = tmp[j];
     }
+
+    lseek(filefd, 0, SEEK_SET);
     write(filefd, ptr, buf.st_size);
     close(filefd);
     return SUCCESS;
