@@ -46,8 +46,8 @@ ${ODIR_DEBUG}%.o: ${SOURCE_DIR}%.c
 
 #test file
 ${NAME_TEST}: ${OBJS_TEST}
-	${CC} ${CCFLAGS_TEST} ${OBJS_TEST} -o ${NAME_TEST}
-${ODIR_TEST}%.o: ${TEST_DIR_DIR}%.c
+	${CC} ${OBJS_TEST} -o ${NAME_TEST}
+${ODIR_TEST}%.o: ${TEST_DIR}%.c
 	${CC} ${CCFLAGS_TEST} -c $< -o $@
 
 clean:
