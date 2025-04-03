@@ -10,6 +10,7 @@
 # include <sys/mman.h>
 # include <sys/stat.h>
 
+# include "color.h"
 # include "constants.h"
 # include "libft.h"
 
@@ -34,5 +35,12 @@ int print_err(int e, char *err_string);
 /*parse elf*/
 int is_valid_elf_file(ELF_datas_64 *elf_datas);
 int fill_64(ELF_datas_64 *elf_datas);
+
+/*inject elf*/
+unsigned char *dump_shellcode(int *shellcode_len);
+int parse_phdr(ELF_datas_64 *elf_datas);
+
+/*misc*/
+void print_woody();
 
 #endif
