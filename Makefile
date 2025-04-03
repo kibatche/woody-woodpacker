@@ -1,7 +1,7 @@
 CC = clang
 CCFLAGS = -Wall -Wextra -Werror
 CCFLAGS_DEBUG = -Wall -Wextra -Werror -g #-fsanitize=address // cause une erreur de SIG_ACCER
-CCFLAGS_TEST = -no-pie
+CCFLAGS_TEST = 
 SOURCE_DIR = srcs/
 TEST_DIR = resources/
 TFILES = sample.c

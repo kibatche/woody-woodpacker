@@ -1,48 +1,34 @@
 BITS 64
-ALIGN 8
 section .text
     global woody
 woody:
-    sub rsp, 112
+    sub rsp, 72
     mov [rsp], rbx
     mov [rsp], rcx
     mov [rsp], rdx
     mov [rsp], rsi
     mov [rsp], rdi
     mov [rsp], rbp
-    mov [rsp], r8 
-    mov [rsp], r9 
-    mov [rsp], r10
-    mov [rsp], r11
-    mov [rsp], r12
     mov [rsp], r13
     mov [rsp], r14
     mov [rsp], r15
-    mov rax, 0xa2d;'-\n'
-    push rax
-    mov rax, 0x2d79646f6f772d2d;'--woody-'
-    push rax
-    mov rdi, 1
-    mov rsi, rsp
-    mov rax, 1
-    mov rdx, 10
+    mov rdi, 1;syscall 1 (write)
+    lea rsi, [rel woodymsg]; load effective address, permet de load l'adresse du tableau de bytes woodymsg directement dans rsi (check syscall)
+    mov rax, 1; fd 1
+    mov rdx, end - woodymsg;taille
     syscall
-    add rsp, 16
-    mov r15, [rsp]
+    mov r15, [rsp + 0]
     mov r14, [rsp + 8]
     mov r13, [rsp + 16]
-    mov r12, [rsp + 24]
-    mov r11, [rsp + 32]
-    mov r10, [rsp + 40]
-    mov r9 , [rsp + 48]
-    mov r8 , [rsp + 56]
-    mov rbp, [rsp + 64]
-    mov rdi, [rsp + 72]
-    mov rsi, [rsp + 80]
-    mov rdx, [rsp + 88]
-    mov rcx, [rsp + 96]
-    mov rbx, [rsp + 104]
-    lea rdi, [woody]
-    jmp rdi
-
+    mov rbp, [rsp + 24]
+    mov rdi, [rsp + 32]
+    mov rsi, [rsp + 40]
+    mov rdx, [rsp + 48]
+    mov rcx, [rsp + 56]
+    mov rbx, [rsp + 64]
+    lea r10, [rel woody + 0x3648]
+    jmp r10
+align 8
+    woodymsg db '...WOODY...',0x0a,0x0
+    end db 0x0
 
