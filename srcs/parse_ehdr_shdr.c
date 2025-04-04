@@ -4,6 +4,13 @@ extern void             *ptr;
 extern unsigned long    filelen;
 extern int              fd;
 
+/**
+ * @brief This function populates the Elf_datas_64 struct with different
+ * needed informations.
+ * 
+ * @param elf_datas 
+ * @return int 
+ */
 int fill_64(ELF_datas_64 *elf_datas)
 {
     elf_datas->hdr_64 = (Elf64_Ehdr *)ptr;
@@ -30,7 +37,12 @@ int fill_64(ELF_datas_64 *elf_datas)
     return SUCCESS;
 }
 
-
+/**
+ * @brief This function validates the format of the ELF file.
+ * 
+ * @param elf_datas 
+ * @return int 
+ */
 int is_valid_elf_file(ELF_datas_64 *elf_datas)
 {
     unsigned char *tmp = (unsigned char *)ptr; // on cast en unsigned tant qu'on ne sait si 32 ou 64 bits

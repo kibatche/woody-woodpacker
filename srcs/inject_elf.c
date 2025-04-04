@@ -4,6 +4,13 @@ extern void             *ptr;
 extern unsigned long    filelen;
 extern int              fd;
 
+/**
+ * @brief This function dump the shellcode from the generated .bin in create_shellcode(...) function.
+ * It takes a pointer to the shellcode_sz member of the Injection_info struct.
+ * 
+ * @param shellcode_len 
+ * @return unsigned char* 
+ */
 unsigned char *dump_shellcode(unsigned long *shellcode_len)
 {
     int shellcodefd = open("./bin/shellcode.bin", O_RDONLY);
@@ -26,6 +33,16 @@ unsigned char *dump_shellcode(unsigned long *shellcode_len)
     return clean_shellcode;
 }
 
+/**
+ * @brief Create a shellcode generated via dprintf in the maneer of a quine program.
+ * It updates the format string with diffrence between the old and
+ * the new entrypoint of the injection program. Then it compiles the generated file with
+ * nasm to output a .bin object.
+ * 
+ * @param elf_datas 
+ * @param injection_infos 
+ * @return int 
+ */
 int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos)
 {
     pid_t pid;
@@ -80,6 +97,14 @@ int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos)
     return SUCCESS;
 }
 
+/**
+ * @brief This function try to find empty space (eg, 00 bytes) between two PT_LOAD segments
+ * and populate the Injection_infos struct with the variables dumped from the segment with the
+ * largest emprty space. It makes the segment executable, if it was'nt.
+ * 
+ * @param elf_datas 
+ * @param injection_info 
+ */
 void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info)
 {
     int state = 0;
@@ -119,6 +144,14 @@ void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info)
         injection_info->cave_sz, injection_info->shellcode_vaddr, injection_info->shellcode_off);
 }
 
+/**
+ * @brief This function is the main function that orchestrate the injection of the ELF file
+ * It first find the largest empty space between two PT_LOAD segments, create the shellcode,
+ * Import it as an unsigned char * and write it to a new ELF file with the parasite in it. 
+ * 
+ * @param elf_datas 
+ * @return int 
+ */
 int inject_program_segment(ELF_datas_64 *elf_datas)
 {
     int woodyfd;
