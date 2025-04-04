@@ -17,7 +17,7 @@ int main(int ac, char **av)
     fd = open(av[1],  O_RDWR);
     if (fd == -1)
         return print_err(errno, ERROR_OPEN);
-    filelen = lseek(fd, 0, SEEK_END);//needed to know the size of the binary 'cause we can't use fstat
+    filelen = lseek(fd, 0, SEEK_END);//needed to know the size of the binary 'cause we can't use fstat (EDIT : that's wrong, fstat is a syscall.)
     lseek(fd, 0, SEEK_SET);//reset the pointer to the beginning of the file
     ptr = mmap(0, filelen, PROT_READ | PROT_EXEC | PROT_WRITE, MAP_PRIVATE, fd, 0);
     if (ptr == MAP_FAILED)
