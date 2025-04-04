@@ -54,7 +54,7 @@ clean:
 	${RM} ${ODIR} ${ODIR_DEBUG}
 	@make -C libft clean
 fclean:
-	${RM} ${ODIR} ${ODIR_DEBUG} ${NAME} ${NAME_DEBUG} woody_test woody
+	${RM} ${ODIR} ${ODIR_DEBUG} ${ODIR_TEST} ${NAME} ${NAME_DEBUG} ${NAME_TEST} woody_test woody
 	@make -C libft fclean
 re: fclean
 	@make -j `nproc` all
