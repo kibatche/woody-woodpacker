@@ -31,7 +31,7 @@ woody:
     mov rdx, [rsp + 64]  
     mov rcx, [rsp + 72]  
     mov rbx, [rsp + 80]
-    lea r10, [rel woody - 0x105f1]
+    lea r10, [rel woody - 0x2245]
     jmp r10
 align 8
     woodymsg db '....WOODY....',0x0a,0x0

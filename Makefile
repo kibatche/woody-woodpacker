@@ -1,7 +1,7 @@
 CC = clang
 CCFLAGS = -Wall -Wextra -Werror
 CCFLAGS_DEBUG = -Wall -Wextra -Werror -g #-fsanitize=address // cause une erreur de SIG_ACCER
-CCFLAGS_TEST = 
+CCFLAGS_TEST =
 SOURCE_DIR = srcs/
 TEST_DIR = resources/
 TFILES = sample.c
@@ -51,14 +51,10 @@ ${ODIR_TEST}%.o: ${TEST_DIR}%.c
 	${CC} ${CCFLAGS_TEST} -c $< -o $@
 
 clean:
-	${RM} ${ODIR}
-	${RM} ${ODIR_DEBUG}
+	${RM} ${ODIR} ${ODIR_DEBUG}
 	@make -C libft clean
 fclean:
-	${RM} ${ODIR}
-	${RM} ${ODIR_DEBUG}
-	${RM} ${NAME}
-	${RM} ${NAME_DEBUG}
+	${RM} ${ODIR} ${ODIR_DEBUG} ${NAME} ${NAME_DEBUG} woody_test woody
 	@make -C libft fclean
 re: fclean
 	@make -j `nproc` all
