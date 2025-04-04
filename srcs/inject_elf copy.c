@@ -35,7 +35,7 @@ char *dump_shellcode(int *shellcode_len)
     return clean_shellcode;
 }
 
-int parse_phdr(ELF_datas_64 *elf_datas)
+int inject_program_segment(ELF_datas_64 *elf_datas)
 {
     elf_datas->phdr_64 = (Elf64_Phdr *)(ptr + elf_datas->hdr_64->e_phoff);
     Elf64_Phdr *prev = NULL;

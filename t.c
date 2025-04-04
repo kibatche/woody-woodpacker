@@ -1,3 +1,6 @@
-#include <elf.h>
-
-int main(){printf("%lx\n", sizeof(Elf64_Phdr)); return 0;}
+#include <unistd.h>
+int main(int argc, char **argv, char **envp) {
+        execve(argv[1], &argv[1], envp);
+        printf("Apres execve\n");
+        return 0;
+}

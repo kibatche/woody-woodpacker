@@ -25,9 +25,7 @@ int main(int ac, char **av)
     ret = is_valid_elf_file(&elf_datas_64);
     if (ret == ERROR)
         goto FREE_AND_CLOSE;
-    ret = parse_phdr(&elf_datas_64);
-    if (ret == ERROR)
-        goto FREE_AND_CLOSE;
+    ret = inject_program_segment(&elf_datas_64);
 FREE_AND_CLOSE:
     if (ret == ERROR)
         err_ret = EXIT_FAILURE;

@@ -9,7 +9,8 @@
 # include <string.h>
 # include <sys/mman.h>
 # include <sys/stat.h>
-
+# include <sys/wait.h>
+# include <unistd.h>
 # include "color.h"
 # include "constants.h"
 # include "libft.h"
@@ -29,6 +30,15 @@ typedef struct ELF_datas_64
     unsigned char  *text_section_instructions;/*section .text de l'exécutable*/
 } ELF_datas_64;
 
+typedef struct Injection_infos
+{
+    unsigned char   *shellcode;
+    unsigned long   shellcode_sz;
+    Elf64_Addr      shellcode_vaddr;
+    Elf64_Off       shellcode_off;
+    unsigned long   cave_sz;
+} Injection_infos;
+
 /*error handling*/
 int print_err(int e, char *err_string);
 
@@ -37,8 +47,10 @@ int is_valid_elf_file(ELF_datas_64 *elf_datas);
 int fill_64(ELF_datas_64 *elf_datas);
 
 /*inject elf*/
-unsigned char *dump_shellcode(int *shellcode_len);
-int parse_phdr(ELF_datas_64 *elf_datas);
+int inject_program_segment(ELF_datas_64 *elf_datas);
+void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info);
+int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos);
+unsigned char *dump_shellcode(unsigned long *shellcode_len);
 
 /*misc*/
 void print_woody();

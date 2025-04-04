@@ -65,6 +65,7 @@
     "errno.h": "c",
     "elf.h": "c",
     "fcntl.h": "c",
-    "woody.h": "c"
+    "woody.h": "c",
+    "stat.h": "c"
   }
 }

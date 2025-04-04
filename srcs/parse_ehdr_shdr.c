@@ -26,7 +26,7 @@ int fill_64(ELF_datas_64 *elf_datas)
             return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
     }
     if (elf_datas->offset_section_table_64 + (elf_datas->hdr_64->e_shnum * elf_datas->hdr_64->e_shentsize) > (unsigned long)filelen)
-        return print_err(0, NO_SYMBOL);
+        return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
     return SUCCESS;
 }
 

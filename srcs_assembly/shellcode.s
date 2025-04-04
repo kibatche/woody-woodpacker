@@ -15,10 +15,10 @@ woody:
     mov [rsp], r13  
     mov [rsp], r14  
     mov [rsp], r15  
-    mov rdi, 1;syscall 1 (write)
-    lea rsi, [rel woodymsg]; load effective address, permet de load l'adresse du tableau de bytes woodymsg directement dans rsi (check syscall)
-    mov rax, 1; fd 1
-    mov rdx, end - woodymsg;taille
+    mov rdi, 1
+    lea rsi, [rel woodymsg]
+    mov rax, 1
+    mov rdx, end - woodymsg
     syscall
     mov r15, [rsp + 0]  
     mov r14, [rsp + 8]  
@@ -31,9 +31,8 @@ woody:
     mov rdx, [rsp + 64]  
     mov rcx, [rsp + 72]  
     mov rbx, [rsp + 80]
-    lea r10, [rel woody + 0x3648]
+    lea r10, [rel woody - 0x105f1]
     jmp r10
 align 8
-    woodymsg db '...WOODY...',0x0a,0x0
+    woodymsg db '....WOODY....',0x0a,0x0
     end db 0x0
-
