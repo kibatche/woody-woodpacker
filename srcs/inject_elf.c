@@ -35,7 +35,7 @@ unsigned char *dump_shellcode(unsigned long *shellcode_len)
 
 /**
  * @brief Create a shellcode generated via dprintf in the maneer of a quine program.
- * It updates the format string with diffrence between the old and
+ * It updates the format string with difference between the old and
  * the new entrypoint of the injection program. Then it compiles the generated file with
  * nasm to output a .bin object.
  * 
@@ -70,7 +70,7 @@ int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos)
     (sign == 1 ? '+':'-'), diff);
     close(shellcode_fd);
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"We will fork() our main program to compile the assembly file into a .bin file format.\n"COLOR_RESET);
-    ;// we are allowed to use syscalls
+    // we are allowed to use syscalls
     if ((pid = fork()) == 0)//child
     {
         char *const arg[] = {"nasm","-f", "bin", "-o", "./bin/shellcode.bin", "./srcs_assembly/shellcode.s", NULL};
@@ -100,7 +100,7 @@ int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos)
 /**
  * @brief This function try to find empty space (eg, 00 bytes) between two PT_LOAD segments
  * and populate the Injection_infos struct with the variables dumped from the segment with the
- * largest emprty space. It makes the segment executable, if it was'nt.
+ * largest empty space. It makes the segment executable, if it was'nt.
  * 
  * @param elf_datas 
  * @param injection_info 
@@ -169,9 +169,8 @@ int inject_program_segment(ELF_datas_64 *elf_datas)
         REEF(injection_info.shellcode);
         return print_err(0, "No sufficient space inside the binary. Try another one.");
     }
-    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"There is sufficient space to fit our shellcode.\n"COLOR_RESET);
-    Elf64_Ehdr *hdr_64 = (Elf64_Ehdr *)ptr;
-    hdr_64->e_entry = injection_info.shellcode_vaddr;
+    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"There is sufficient space to put our shellcode.\n"COLOR_RESET);
+    ((Elf64_Ehdr *)ptr)->e_entry = injection_info.shellcode_vaddr;
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Opening the new file : woody_test\n"COLOR_RESET);
     woodyfd = open("woody_test", O_CREAT | O_RDWR | O_TRUNC, 0755);
     if (woodyfd == -1)
@@ -181,8 +180,6 @@ int inject_program_segment(ELF_datas_64 *elf_datas)
     }
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Shellcode offset : %lx\n"COLOR_RESET, injection_info.shellcode_off);
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Writing shellcode into mmap'ed binary file...\n"COLOR_RESET);
-    // for (int i = 0; i < shellcode_len; i++)
-    //     ((unsigned char *)ptr + shellcode_off)[i] = shellcode[i];
     ft_memcpy(((unsigned char *)ptr + injection_info.shellcode_off), injection_info.shellcode, injection_info.shellcode_sz);
     REEF(injection_info.shellcode);
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Shellcode written to the mmap'ed file !\n"COLOR_RESET);

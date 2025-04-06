@@ -17,6 +17,7 @@ done
 echo "Total : $total"
 
 # gpt / me
+# this function creates a progress bar.
 show_progress() {
     local current=$1
     local max=$2
@@ -36,6 +37,7 @@ show_progress() {
 }
 
 #me
+# this function tests woody_woodpacker on files in /bin directory if for each binary its type is ET_EXEC/ET_DYN
 base_name
 for file in /bin/*; do
     if readelf -h "$file" 2>/dev/null | grep -qE 'Type:.*(DYN|EXEC)'; then
@@ -45,6 +47,7 @@ for file in /bin/*; do
             sleep 0.1
             if [ "$base_name" == "gsec" ]; then
                 ((total--))
+                rm -f "$TMPDIR/$base_name"
                 continue
             fi
             printf "%s :\n" "$base_name" >> res
@@ -56,7 +59,6 @@ for file in /bin/*; do
             ((error++))
         fi
     fi
-
     show_progress $count $total $base_name $error
 done
 
