@@ -67,6 +67,7 @@
     "fcntl.h": "c",
     "woody.h": "c",
     "stat.h": "c",
-    "t.C": "cpp"
+    "t.C": "cpp",
+    "wait.h": "c"
   }
 }

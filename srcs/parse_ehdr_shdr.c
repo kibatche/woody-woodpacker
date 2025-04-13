@@ -34,6 +34,22 @@ int fill_64(ELF_datas_64 *elf_datas)
     }
     if (elf_datas->offset_section_table_64 + (elf_datas->hdr_64->e_shnum * elf_datas->hdr_64->e_shentsize) > (unsigned long)filelen)
         return print_err(0, FILE_FORMAT_NOT_RECOGNIZED);
+    uint16_t i = 0;
+    Elf64_Shdr *shstr_sect = (ptr + elf_datas->shdr_64[elf_datas->hdr_64->e_shstrndx].sh_offset);
+    while (i < elf_datas->nb_of_entries_section_table_64)
+    {
+        Elf64_Shdr *text_section_tmp = &elf_datas->shdr_64[i];
+        if (text_section_tmp->sh_type == SHT_PROGBITS && text_section_tmp->sh_flags & SHF_ALLOC \
+            && text_section_tmp->sh_flags & SHF_EXECINSTR)
+        {/*Détermine si la section de type SHT_PROGBITS est bien la section .text*/
+            if (!ft_strcmp(".text", (const char *)&shstr_sect[text_section_tmp->sh_name]))
+            {
+                elf_datas->text_section_sh_offset = elf_datas->shdr_64[i].sh_offset;
+                elf_datas->text_section_sh_size = elf_datas->shdr_64[i].sh_size;
+            }
+        }
+        i++;
+    }
     return SUCCESS;
 }
 

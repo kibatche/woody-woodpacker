@@ -27,7 +27,8 @@ typedef struct ELF_datas_64
     uint64_t    offset_section_table_64;/*offset de la table des sections*/
     uint16_t    nb_of_entries_section_table_64;/*nombre d'entrées dans la table des section*/
     uint32_t    size_of_entry_section_table_64;/*taille de chaque entrée dans la table des sections*/
-    unsigned char  *text_section_instructions;/*section .text de l'exécutable*/
+    Elf32_Off	text_section_sh_offset;
+    Elf32_Word	text_section_sh_size;
 } ELF_datas_64;
 
 typedef struct Injection_infos
@@ -51,6 +52,9 @@ int inject_program_segment(ELF_datas_64 *elf_datas);
 void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info);
 int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos);
 unsigned char *dump_shellcode(unsigned long *shellcode_len);
+
+/*crypto*/
+int rc4_cipher(ELF_datas_64 *elf_datas);
 
 /*misc*/
 void print_woody();

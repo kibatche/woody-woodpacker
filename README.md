@@ -10,7 +10,7 @@ Pour inférer le fonctionnement du programme, de multiples méthodes existent. L
 
 Chaque segment à des propriétés, dont l'une d'entre elle consiste à ce que ledit segment soit lisible/exécutable. Nous allons donc changer cette propriété du segment si jamais il n'est pas exécutable, et changer le point d'entrée du fichier sur l'adresse mémoire du parasite.
 
-Le parasite quant à lui va "simplement" se charger d'imprimer le tableau de caractères "....WOODY....", de déchiffrer ce qui est chiffré, puis de rendre la "main" au point d'entrée original du fichier, qui va pour s'exécuter normalement.
+Le parasite quant à lui va "simplement" se charger d'imprimer le tableau de caractères "....WOODY....", de déchiffrer ce qui est chiffré, puis de rendre la "main" au point d'entrée original du fichier, qui va pouvoir s'exécuter normalement.
 
 ## Cela fonctionne-t-il pour tous les fichiers ?
 
