@@ -10,7 +10,6 @@ _start:
     xor rcx, rcx
     lea rdi, [S]
     lea rsi, [k]
-
 init_loop_s:
     mov [rdi + rcx], rcx    ; S[rcx] = rcx
     inc rcx
@@ -34,7 +33,6 @@ init_loop_j:
     inc rcx
     cmp rcx, 256
     jne init_loop_j
-
     xor rcx, rcx            ; i = 0
     xor r8, r8              ; j = 0
     xor r9, r9              ; k = 0
@@ -57,26 +55,20 @@ decipher:
     movzx rax, byte [rdi + r8];xorkeyint = xorkeyint + S[j];
     add r10, rax;xorkeyint = xorkeyint + S[j];
     and r10, 255;xorkeyint = xorkeyint % 256;
-
     movzx r11, byte [rdi + r10];xorkeyint = S[xorkeyint];
     xor [rbx + r9], r11b;text[k] = text[k] ^ xorkeyint;
-
     inc r9
     cmp r9, textend - text
     jne decipher
-
 print:
     lea rsi, [rel text]
     mov rax, 1
     mov rdi, 1
     mov rdx, textend - text
     syscall
-
-    ; exit propre
     mov rax, 60
     xor rdi, rdi
     syscall
-
 
 ; ─ REGISTRES X86_64 ───────────────────────────────────────────────────────────────────────────────────────────────┐
 ; Nom | B. | Sous-registres  |                  | Convention d’appel (SysV)                                         |
