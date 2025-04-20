@@ -1,56 +1,89 @@
-section .data:
-    k db 0x8c, 0x26, 0xf3, 0x43, 0x9d, 0x5c, 0xd6, 0x3b, 0x22, 0x29, 0xa9, 0xc8, 0x6e, 0x06, 0xfa, 0xbe, 0x28, 0xb2, 0x9d, 0x3a, 0xe6, 0xd1, 0xbc, 0x4b, 0x9c, 0xec, 0x45, 0x7d, 0xb4, 0x91, 0x9d, 0x27
-    text db 'this is a secret'
+BITS 64
+section .data
+    k db 0x3e, 0xf0, 0x87, 0x16, 0x68, 0x5e, 0x8a, 0x95, 0x0e, 0xc7, 0x7e, 0x18, 0xdb, 0x3e, 0x1b, 0x21, 0xf5, 0xd0, 0x13, 0x8e, 0x26, 0x3f, 0xbc, 0x0f, 0xd0, 0xf4, 0xa1, 0xb4, 0xa5, 0x10, 0x3a, 0x68
+    text db 0x9f, 0x65, 0x8b, 0xb4, 0xff, 0x1e, 0x2a, 0xe8, 0x40, 0x14, 0xad, 0x8a, 0x1a, 0x6d, 0xb8, 0xa3, 0x04
     textend db 0x0
-    S: resb 0x100; 256
-section .text:
-    global rc4
-rc4:
-    xor CX, CX
+    S: times 256 db 0 ; 256
+section .text
+    global _start
+_start:
+    xor rcx, rcx
+    lea rdi, [S]
+    lea rsi, [k]
+
 init_loop_s:
-    mov byte [S + CX], CL; S[CX] = 8 bits du registre (r)CX
-    inc CX
-    jno init_loop_s
-    xor CL, CL;i = 0
-    xor R8W, R8W;j = 0
+    mov [rdi + rcx], rcx    ; S[rcx] = rcx
+    inc rcx
+    cmp rcx, 256
+    jne init_loop_s
+    xor rcx, rcx            ; i = 0
+    xor r8, r8              ; j = 0
 init_loop_j:
-    add R8W, byte [S + CL]; r8w = r8w + S[CL]
-    mov R9B, CL; R9B = CL (8 derniers bits de chaque)
-    and R9B, 31; R9B = i % 32
-    add R8W, byte [k + R9B]; R8W = k[R9B]
-    and R8W, 255; j % 256
-    mov R9B, byte [S + CL]
-    mov byte [S + CL], byte [S + r8b]
-    mov byte [S + R8W], R9B
-    inc CL
-    jno init_loop_j; jump if no overflow, ça sauve ptet une ligne de code
-    xor CX, CX;i = 0
-    xor R8W, R8W;j = 0
-    xor R9, R9;k = 0
-cipher:
-    inc CX; CX++
-    and CX, 255; CX % 256
-    add R8W, byte [S + CL]; R8W = r8b + S[CL]
-    and R8W, 255; R8W % 256
-    mov R10B, byte [S + CL]; R10B = S[CL]
-    mov byte [S + CL], byte [S + r8b]; S[CL] = S [r8b]
-    mov byte [S + r8b], R10B; S[r8b] = tmp (R10B)
-    xor R10W, R10W; on remet à 0 car apriori les petits registre ne remettent pas à 0.
-    add R10W, byte [S + CL] ; R10W = R10W + S[CL]
-    add R10W, byte [S + r8b]; R10W = R10W + S[R8W]
-    and R10W, 255; R10W = R10W % 256
-    mov R11B, byte [S + R10W]; R11B = S[(S[cl] + S[r8b]) % 256]
-    xor [text + R9], R11B; text[R9] ^= R11B
-    inc R9; R9++
-    cmp R9, textend - text; len de text, via un calcul d'adresse (sauve une ligne)
-    jne cipher; R9 < len(text) ? jmp : continue
+    movzx rax, byte [rdi + rcx] 
+    add r8, rax     ; j = j + S[i]
+    mov r9, rcx
+    and r9, 31           ; r9 = i % 32
+    movzx rax, byte [rsi + r9]; K[i % 32]
+    add r8, rax      ; K[i % 32]
+    and r8, 255             ; j %= 256
+    xor rax, rax
+    movzx r9, byte [rdi + rcx]; 
+    movzx rax, byte [rdi + r8]; see => https://stackoverflow.com/questions/51387571/movzx-missing-32-bit-register-to-64-bit-register
+    mov [rdi + rcx], al
+    mov [rdi + r8], r9b
+    inc rcx
+    cmp rcx, 256
+    jne init_loop_j
+
+    xor rcx, rcx            ; i = 0
+    xor r8, r8              ; j = 0
+    xor r9, r9              ; k = 0
+    lea rbx, [text]
+decipher:
+    inc rcx; i = (i + 1);
+    and rcx, 255;i = i % 256;
+    movzx rax, byte [rdi + rcx];j = (j + S[i]);
+    add r8, rax;j = (j + S[i]);
+    and r8, 255;j = j % 256;
+    xor rax, rax
+    movzx r10, byte [rdi + rcx]; unsigned char tmp = S[i];
+    movzx rax, byte [rdi + r8];= S[j];
+    mov [rdi + rcx], al;S[i] = S[j];
+    mov [rdi + r8], r10b; S[j] = tmp;
+    xor r10, r10
+    xor rax, rax
+    movzx rax, byte [rdi + rcx];unsigned char xorkeyint = S[i];
+    add r10, rax;unsigned char xorkeyint = S[i];
+    movzx rax, byte [rdi + r8];xorkeyint = xorkeyint + S[j];
+    add r10, rax;xorkeyint = xorkeyint + S[j];
+    and r10, 255;xorkeyint = xorkeyint % 256;
+
+    movzx r11, byte [rdi + r10];xorkeyint = S[xorkeyint];
+    xor [rbx + r9], r11b;text[k] = text[k] ^ xorkeyint;
+
+    inc r9
+    cmp r9, textend - text
+    jne decipher
+
+print:
+    lea rsi, [rel text]
+    mov rax, 1
+    mov rdi, 1
+    mov rdx, textend - text
+    syscall
+
+    ; exit propre
+    mov rax, 60
+    xor rdi, rdi
+    syscall
+
 
 ; ─ REGISTRES X86_64 ───────────────────────────────────────────────────────────────────────────────────────────────┐
 ; Nom | B. | Sous-registres  |                  | Convention d’appel (SysV)                                         |
 ;─────|────|────────────────────────────────────────────────────────────────────────────────────────────────────────┤
 ; RAX | 64 | EAX, AX, AH/AL  | valeur de retour | Peut être modifié par la fonction appelée                         |
 ; RBX | 64 | EBX, BX, BH/BL  |                  | Doit être sauvegardé par la fonction appelée                      |
-; RCX | 64 | ECX, CX, CH/CL  | 4e arg           | Peut être modifié par la fonction appelée                         |
+; RCX | 64 | ECX, RCX, CH/RCX  | 4e arg           | Peut être modifié par la fonction appelée                         |
 ; RDX | 64 | EDX, DX, DH/DL  | 3e arg           | Peut être modifié par la fonction appelée                         |
 ; RSI | 64 | ESI, SI, SIL    | 2e arg           | Peut être modifié par la fonction appelée                         |
 ; RDI | 64 | EDI, DI, DIL    | 1e arg           | Peut être modifié par la fonction appelée                         |
@@ -72,7 +105,7 @@ cipher:
 ;  0 │ read          │ 0x00        │ fd     │ *buf       │ count         │ -            │ -            │ -        │
 ;  1 │ write         │ 0x01        │ fd     │ *buf       │ count         │ -            │ -            │ -        │
 ;  2 │ open          │ 0x02        │ *path  │ flags      │ mode          │ -            │ -            │ -        │
-;  3 │ CLose         │ 0x03        │ fd     │ -          │ -             │ -            │ -            │ -        │
+;  3 │ RCXose         │ 0x03        │ fd     │ -          │ -             │ -            │ -            │ -        │
 ;  4 │ stat          │ 0x04        │ *path  │ *statbuf   │ -             │ -            │ -            │ -        │
 ;  5 │ fstat         │ 0x05        │ fd     │ *statbuf   │ -             │ -            │ -            │ -        │
 ;  6 │ lstat         │ 0x06        │ *path  │ *statbuf   │ -             │ -            │ -            │ -        │
