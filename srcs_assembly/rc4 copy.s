@@ -1,8 +1,6 @@
 BITS 64
 section .data
     k db 0x3e, 0xf0, 0x87, 0x16, 0x68, 0x5e, 0x8a, 0x95, 0x0e, 0xc7, 0x7e, 0x18, 0xdb, 0x3e, 0x1b, 0x21, 0xf5, 0xd0, 0x13, 0x8e, 0x26, 0x3f, 0xbc, 0x0f, 0xd0, 0xf4, 0xa1, 0xb4, 0xa5, 0x10, 0x3a, 0x68
-    text db 0x9f, 0x65, 0x8b, 0xb4, 0xff, 0x1e, 0x2a, 0xe8, 0x40, 0x14, 0xad, 0x8a, 0x1a, 0x6d, 0xb8, 0xa3, 0x04
-    textend db 0x0
     S: times 256 db 0 ; 256
 section .text
     global _start
@@ -11,7 +9,7 @@ _start:
     lea rdi, [S]
     lea rsi, [k]
 init_loop_s:
-    mov byte [rdi + rcx], cl    ; S[rcx] = cl
+    mov [rdi + rcx], rcx    ; S[rcx] = rcx
     inc rcx
     cmp rcx, 256
     jne init_loop_s
@@ -28,8 +26,8 @@ init_loop_j:
     xor rax, rax
     movzx r9, byte [rdi + rcx];
     movzx rax, byte [rdi + r8]; see => https://stackoverflow.com/questions/51387571/movzx-missing-32-bit-register-to-64-bit-register
-    mov byte [rdi + rcx], al
-    mov byte [rdi + r8], r9b
+    mov [rdi + rcx], al
+    mov [rdi + r8], r9b
     inc rcx
     cmp rcx, 256
     jne init_loop_j
@@ -46,8 +44,8 @@ decipher:
     xor rax, rax
     movzx r10, byte [rdi + rcx]; unsigned char tmp = S[i];
     movzx rax, byte [rdi + r8];= S[j];
-    mov byte [rdi + rcx], al;S[i] = S[j];
-    mov byte [rdi + r8], r10b; S[j] = tmp;
+    mov [rdi + rcx], al;S[i] = S[j];
+    mov [rdi + r8], r10b; S[j] = tmp;
     xor r10, r10
     xor rax, rax
     movzx rax, byte [rdi + rcx];unsigned char xorkeyint = S[i];

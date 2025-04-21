@@ -15,8 +15,6 @@ int main(int ac, char **av)
         return print_err(0, USAGE);
     ft_memset(&elf_datas_64, 0, sizeof(elf_datas_64));
     fd = open(av[1],  O_RDWR);
-    rc4_cipher(&elf_datas_64);
-    exit(1);
     if (fd == -1)
         return print_err(errno, ERROR_OPEN);
     filelen = lseek(fd, 0, SEEK_END);//needed to know the size of the binary 'cause we can't use fstat (EDIT : that's wrong, fstat is a syscall.)

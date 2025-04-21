@@ -7,13 +7,14 @@ extern int              fd;
 /**
  * @brief This function populates the Elf_datas_64 struct with different
  * needed informations.
- * 
- * @param elf_datas 
- * @return int 
+ *
+ * @param elf_datas
+ * @return int
  */
 int fill_64(ELF_datas_64 *elf_datas)
 {
     elf_datas->hdr_64 = (Elf64_Ehdr *)ptr;
+    elf_datas->phdr_64 = (Elf64_Phdr *)(ptr + elf_datas->hdr_64->e_phoff);
     elf_datas->proc_bits = 64;
     elf_datas->offset_section_table_64 = elf_datas->hdr_64->e_shoff;
     elf_datas->nb_of_entries_section_table_64 = elf_datas->hdr_64->e_shnum;
@@ -42,10 +43,11 @@ int fill_64(ELF_datas_64 *elf_datas)
         if (text_section_tmp->sh_type == SHT_PROGBITS && text_section_tmp->sh_flags & SHF_ALLOC \
             && text_section_tmp->sh_flags & SHF_EXECINSTR)
         {/*Détermine si la section de type SHT_PROGBITS est bien la section .text*/
-            if (!ft_strcmp(".text", (const char *)&shstr_sect[text_section_tmp->sh_name]))
+            if (!ft_strcmp(".text", (const char *)shstr_sect + text_section_tmp->sh_name))
             {
                 elf_datas->text_section_sh_offset = elf_datas->shdr_64[i].sh_offset;
                 elf_datas->text_section_sh_size = elf_datas->shdr_64[i].sh_size;
+                elf_datas->text_section_vaddr = elf_datas->shdr_64[i].sh_addr;
             }
         }
         i++;
@@ -55,9 +57,9 @@ int fill_64(ELF_datas_64 *elf_datas)
 
 /**
  * @brief This function validates the format of the ELF file.
- * 
- * @param elf_datas 
- * @return int 
+ *
+ * @param elf_datas
+ * @return int
  */
 int is_valid_elf_file(ELF_datas_64 *elf_datas)
 {
