@@ -17,9 +17,9 @@ int rc4_cipher(ELF_datas_64 *elf_datas)
     if (r == -1)
         return print_err(0, "[!] read failed to read /dev/urandom.");
     close(dev_urandom_fd);
-    printf("The init key is :\n");
+    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Cipher KEY is :\n"COLOR_RESET);
     for (int i = 0; i < 32; i++)
-        printf("0x%02x, ", K[i]);
+        printf(COLOR_BOLD_BLUE"0x%02x "COLOR_RESET, K[i]);
     printf("\n");
     elf_datas->K = K;
     int j = 0;
