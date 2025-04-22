@@ -1,6 +1,8 @@
 # Prerequisites
 *.d
-
+*.txt
+*.bin
+*.exec
 # Object files
 *.o
 *.ko
@@ -50,3 +52,17 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+woody_woodpacker
+.gdb*
+assembly
+local_test
+local_test.c
+originalres
+origintest
+res
+test
+test_file
+woody_test
+woody_woodpacker_debug
+woodyres
+writetest
