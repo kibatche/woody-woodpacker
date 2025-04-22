@@ -198,7 +198,7 @@ int inject_program_segment(ELF_datas_64 *elf_datas)
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"There is sufficient space to put our shellcode.\n"COLOR_RESET);
     ((Elf64_Ehdr *)ptr)->e_entry = injection_info.shellcode_vaddr;
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Opening the new file : woody_test\n"COLOR_RESET);
-    woodyfd = open("woody_test", O_CREAT | O_RDWR | O_TRUNC, 0755);
+    woodyfd = open("woody", O_CREAT | O_RDWR | O_TRUNC, 0755);
     if (woodyfd == -1)
     {
         REEF(injection_info.shellcode);
