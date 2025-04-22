@@ -142,7 +142,7 @@ void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info)
     {
         Elf64_Phdr *curr = &elf_datas->phdr_64[i];
         if (curr->p_type == PT_LOAD && curr->p_flags & PF_X && curr->p_flags & PF_R)
-            curr->p_flags |= PF_W;//make pt_load exec segment writable;
+            curr->p_flags |= PF_W;//make pt_load exec segment writable; it is needed to write the deciphered .text section during execution.
         if (!state && curr->p_type == PT_LOAD)
         {
             prev = curr;
