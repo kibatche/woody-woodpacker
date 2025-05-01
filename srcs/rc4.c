@@ -45,7 +45,7 @@ int rc4_cipher(ELF_datas_64 *elf_datas)
         S[i] = S[j];
         S[j] = tmp;
     }
-    for (int i = 0, j = 0, k = 0; k < elf_datas->text_section_sh_size; k++)
+    for (int i = 0, j = 0, k = 0; (uint32_t)k < elf_datas->text_section_sh_size; k++)
     {
         i = (i + 1) % 256;
         j = (j + S[i]) % 256;

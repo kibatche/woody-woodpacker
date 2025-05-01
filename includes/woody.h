@@ -39,6 +39,7 @@ typedef struct Injection_infos
     unsigned long   shellcode_sz;
     Elf64_Addr      shellcode_vaddr;
     Elf64_Off       shellcode_off;
+    Elf64_Phdr      *to_inject;
     unsigned long   cave_sz;
 } Injection_infos;
 

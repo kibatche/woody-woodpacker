@@ -23,6 +23,7 @@ woody:
     lea rsi, [rel k]
     xor rcx, rcx
     xor r8, r8
+    xor rax, rax
 init_loop_j:
     movzx rax, byte [rdi + rcx]
     add r8, rax
