@@ -3,17 +3,18 @@ ALIGN 8
 section .text
     global woody
 woody:
-    push rbx
-    push rcx
-    push rdx
-    push rsi
-    push rdi
-    push rbp
-    push r8
-    push r9
-    push r13
-    push r14
-    push r15
+    sub rsp, 88
+    mov [rsp], rbx  
+    mov [rsp], rcx  
+    mov [rsp], rdx  
+    mov [rsp], rsi  
+    mov [rsp], rdi  
+    mov [rsp], rbp  
+    mov [rsp], r8  
+    mov [rsp], r9   
+    mov [rsp], r13  
+    mov [rsp], r14  
+    mov [rsp], r15 
     mov rdi, 1
     lea rsi, [rel woodymsg]
     mov rax, 1
@@ -67,20 +68,20 @@ decipher:
     inc r9
     cmp r9, 0x%x
     jne decipher
-    pop r15
-    pop r14
-    pop r13
-    pop r9
-    pop r8
-    pop rbp
-    pop rdi
-    pop rsi
-    pop rdx
-    pop rcx
-    pop rbx
+    mov r15, [rsp + 0]  
+    mov r14, [rsp + 8]  
+    mov r13, [rsp + 16]  
+    mov r9 , [rsp + 24]  
+    mov r8 , [rsp + 32]  
+    mov rbp, [rsp + 40]  
+    mov rdi, [rsp + 48]  
+    mov rsi, [rsp + 56]  
+    mov rdx, [rsp + 64]  
+    mov rcx, [rsp + 72]  
+    mov rbx, [rsp + 80]
     lea r10, [rel woody %c 0x%lx]
     jmp r10
-align 8
+
     woodymsg db '....WOODY....',0x0a,0x0
     end db 0x0
     k db 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x, 0x%x
