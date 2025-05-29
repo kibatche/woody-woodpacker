@@ -2,7 +2,8 @@ FROM ubuntu:latest
 
 WORKDIR /app
 
-RUN apt update && apt install binutils clang make bash nasm -y
+RUN apt update 
+RUN apt install binutils clang make bash nasm -y
 
 COPY ./includes ./includes
 COPY ./libft ./libft

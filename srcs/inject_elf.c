@@ -20,15 +20,11 @@ unsigned char *dump_shellcode(unsigned long *shellcode_len)
         return NULL;
     }
     *shellcode_len = lseek(shellcodefd, 0, SEEK_END);
-    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Shellcode size: 0x%lx\n"COLOR_RESET, *shellcode_len);
     unsigned char *clean_shellcode = malloc(*shellcode_len * sizeof(char));
     if (!clean_shellcode) return NULL;
     lseek(shellcodefd, 0, SEEK_SET);
     read(shellcodefd, clean_shellcode, *shellcode_len);
     if (!clean_shellcode) return NULL;
-    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"<0xDEAD> The shellcode is... <0xBEEF>\n"COLOR_RESET);
-    for (int i = 0; (unsigned long)i < *shellcode_len; i++) printf(COLOR_BOLD_BLUE"\\x%02x"COLOR_RESET,clean_shellcode[i]);
-    printf("\n");
     close(shellcodefd);
     return clean_shellcode;
 }
@@ -120,60 +116,6 @@ int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos)
 }
 
 /**
- * @brief This function tries to find empty space (eg, 00 bytes) between two PT_LOAD segments
- * and populate the Injection_infos struct with the variables dumped from the segment with the
- * largest empty space. It makes the segment executable, if it was'nt.
- * It also makes the PT_LOAD && seg->p_flag & PF_X && seg->p_flag & PF_R writable (where the .text section is),
- * because we encrypt this section.
- *
- * @param elf_datas
- * @param injection_info
- */
-void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info)
-{
-    int state = 0;
-    Elf64_Phdr *prev = NULL;
-    Elf64_Phdr *next = NULL;
-    unsigned long max = 0;
-    Elf64_Phdr *to_inject = NULL;
-    Elf64_Phdr *next_struct = NULL;
-
-    for (int i = 0; i < elf_datas->hdr_64->e_phnum; i++)
-    {
-        Elf64_Phdr *curr = &elf_datas->phdr_64[i];
-        if (curr->p_type == PT_LOAD)
-            curr->p_flags |= PF_W;//make pt_load exec segment writable; it is needed to write the deciphered .text section during execution.
-        if (!state && curr->p_type == PT_LOAD)
-        {
-            prev = curr;
-            state = 1;
-            continue;
-        }
-        if (state && curr->p_type == PT_LOAD)
-        {
-            next = curr;
-            if ((next->p_offset - (prev->p_offset + prev->p_filesz)) > max)
-            {
-                max = next->p_offset - (prev->p_offset + prev->p_filesz);
-                to_inject = prev;
-                next_struct = next;
-            }
-            prev = next;
-            continue;
-        }
-    }
-    injection_info->cave_sz = next_struct->p_offset - (to_inject->p_offset + to_inject->p_filesz);
-    injection_info->shellcode_vaddr = to_inject->p_vaddr + to_inject->p_memsz;
-    injection_info->shellcode_off = to_inject->p_offset + to_inject->p_filesz;
-    injection_info->to_inject = to_inject;
-    to_inject->p_flags |= PF_X;//make the segment executable. Yes it's dirty.
-    to_inject->p_flags |= PF_R;//make the segment readable. Yes it's dirty.
-    to_inject->p_flags |= PF_W;//make the segment writable. Yes it's dirty.
-    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Found the two PT_LOAD Segments with the largest size available between them.\n=> Size available is: %lx\n=> Virtual addr of empty space : 0x%lx\n=> Offset where to write our shellcode : 0x%lx\n"COLOR_RESET, \
-        injection_info->cave_sz, injection_info->shellcode_vaddr, injection_info->shellcode_off);
-}
-
-/**
  * @brief This function is the main function that orchestrates the injection of the ELF file
  * It first finds the largest empty space between two PT_LOAD segments, creates the shellcode,
  * Imports it as an unsigned char * and writes it to a new ELF file with the parasite in it.
@@ -185,20 +127,52 @@ int inject_program_segment(ELF_datas_64 *elf_datas)
 {
     int woodyfd;
     Injection_infos injection_info = {NULL, 0, 0, 0, 0, 0};
+    Elf64_Phdr *relro_seg = NULL;
+    Elf64_Addr relro_addr = 0;
+    int result = ERROR;
 
-    find_cave(elf_datas, &injection_info);
-    if (create_shellcode(elf_datas, &injection_info) == ERROR)
-        return ERROR;
-    injection_info.shellcode = dump_shellcode(&injection_info.shellcode_sz);
-    if (!injection_info.shellcode)
-        return ERROR;
-    printf("Shellcode size : 0x%lx available size : 0x%lx\n", injection_info.shellcode_sz ,injection_info.cave_sz);
-    if (injection_info.shellcode_sz > injection_info.cave_sz)
+    for (int i = 0; i < elf_datas->hdr_64->e_phnum; i++)
     {
-        REEF(injection_info.shellcode);
-        return print_err(0, "No sufficient space inside the binary. Try another one.");
+        Elf64_Phdr *curr = &elf_datas->phdr_64[i];
+        if (curr->p_type == PT_GNU_RELRO)
+            relro_seg = curr;
+        if (curr->p_flags & PF_X)
+            curr->p_flags |= PF_W;
     }
-    printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"There is sufficient space to put our shellcode.\n"COLOR_RESET);
+    for (int i = 0; i + 1 < elf_datas->hdr_64->e_phnum; i++)
+    {
+        Elf64_Phdr *current_seg = &elf_datas->phdr_64[i];
+        Elf64_Phdr *next_seg = &elf_datas->phdr_64[i + 1];
+        if (current_seg->p_type != PT_LOAD)
+            continue;
+        relro_addr = (relro_seg->p_vaddr / current_seg->p_align) * current_seg->p_align;
+        injection_info.cave_sz = next_seg->p_offset - (current_seg->p_offset + current_seg->p_filesz);
+        injection_info.shellcode_vaddr = current_seg->p_vaddr + current_seg->p_memsz;
+        injection_info.shellcode_off = current_seg->p_offset + current_seg->p_filesz;
+        injection_info.to_inject = current_seg;
+        if (create_shellcode(elf_datas, &injection_info) == ERROR)
+            continue;
+        injection_info.shellcode = dump_shellcode(&injection_info.shellcode_sz);
+        if (!injection_info.shellcode)
+            continue;
+        printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Shellcode size : 0x%lx available size : 0x%lx\n"COLOR_RESET, injection_info.shellcode_sz ,injection_info.cave_sz);
+        if (injection_info.shellcode_sz > injection_info.cave_sz || (injection_info.shellcode_vaddr > relro_addr && injection_info.shellcode_vaddr > (relro_addr + relro_seg->p_memsz)))
+        {
+            REEF(injection_info.shellcode);
+            print_err(0, "No sufficient space inside the binary or v_addr of shellcode inside RELRO page. We will try another segment if possible to do so.");
+            continue;
+        }
+        injection_info.to_inject->p_flags |= PF_X;//make the segment executable. Yes it's dirty.
+        injection_info.to_inject->p_flags |= PF_R;//make the segment readable. Yes it's dirty.
+        injection_info.to_inject->p_flags |= PF_W;//make the segment writable. Yes it's dirty.
+        printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"There is sufficient space to put our shellcode.\n"COLOR_RESET);
+        printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Found the two PT_LOAD Segments with the largest size available between them.\n=> Size available is: %lx\n=> Virtual addr of empty space : 0x%lx\n=> Offset where to write our shellcode : 0x%lx\n"COLOR_RESET, \
+ injection_info.cave_sz, injection_info.shellcode_vaddr, injection_info.shellcode_off);
+        result = SUCCESS;
+        break;
+    }
+    if (result == ERROR)
+        return print_err(0, "No sufficient space inside the binary or impossible to find a place without RELRO. Try another one.");
     ((Elf64_Ehdr *)ptr)->e_entry = injection_info.shellcode_vaddr;
     printf(COLOR_BOLD_GREEN"[*] "COLOR_BOLD_WHITE"Opening the new file : woody_test\n"COLOR_RESET);
     woodyfd = open("woody", O_CREAT | O_RDWR | O_TRUNC, 0755);

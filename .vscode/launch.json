@@ -5,7 +5,7 @@
       "name": "C/C++ Runner: Debug Session",
       "type": "cppdbg",
       "request": "launch",
-      "args": ["./python3.12"],
+      "args": ["./yaml-bench-18"],
       "stopAtEntry": false,
       "externalConsole": false,
       "cwd": "${workspaceFolder}",

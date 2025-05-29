@@ -59,12 +59,14 @@ for file in /bin/*; do
             rm woody
             rm -f "$TMPDIR/$base_name"
         else
+            echo -e "\033[1;33m[WARNING] $base_name: no sufficient space inside the binary\033[m" >> "$RESULT_FILE"
             ((ERROR++))
         fi
     fi
     show_progress $COUNT $TOTAL $base_name $ERROR
 done
 cat "$RESULT_FILE"
+cat "$RESULT_FILE" | wc -l 
 echo -e "\nTotal available files : $TOTAL."
 echo -e "Total executions of ./woody : $COUNT."
 echo -e "Errors : $ERROR"

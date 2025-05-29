@@ -52,7 +52,6 @@ int fill_64(ELF_datas_64 *elf_datas);
 
 /*inject elf*/
 int inject_program_segment(ELF_datas_64 *elf_datas);
-void find_cave(ELF_datas_64 *elf_datas, Injection_infos *injection_info);
 int create_shellcode(ELF_datas_64 *elf_datas, Injection_infos *injection_infos);
 unsigned char *dump_shellcode(unsigned long *shellcode_len);
 

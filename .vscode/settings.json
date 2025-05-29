@@ -68,6 +68,10 @@
     "woody.h": "c",
     "stat.h": "c",
     "t.C": "cpp",
-    "wait.h": "c"
+    "wait.h": "c",
+    "stdio.h": "c",
+    "unistd.h": "c",
+    "constants.h": "c",
+    "color.h": "c"
   }
 }
